@@ -1,0 +1,23 @@
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+public class Main {
+    private static IDandPasswords idandPasswords;
+
+    public static void main(String[] args) {
+        idandPasswords = new IDandPasswords(); // Create the IDandPasswords object
+        showLoginPage();
+    }
+
+    public static void showLoginPage() {
+        LoginPage loginPage = new LoginPage(idandPasswords); // Pass the idandPasswords object to LoginPage constructor
+
+        // Adding window listener to handle window close event
+        loginPage.frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);  // Exit the program when the window is closed
+            }
+        });
+    }
+}
