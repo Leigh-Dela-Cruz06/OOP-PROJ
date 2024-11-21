@@ -21,3 +21,400 @@ public class Main {
         });
     }
 }
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import javax.swing.*;
+
+public class LoginPage implements ActionListener {
+    JFrame frame = new JFrame();
+    JButton loginButton = new JButton("Log In");
+    JButton signUpButton = new JButton("Sign Up");
+    JTextField userIDField = new JTextField(15);
+    JPasswordField userPasswordField = new JPasswordField(15);
+    JLabel messageLabel = new JLabel(); // To display error or success messages
+
+    HashMap<String, String> logininfo = new HashMap<>();
+    IDandPasswords idandPasswords;
+
+    public LoginPage(IDandPasswords idandPasswords) {
+        this.idandPasswords = idandPasswords;
+        logininfo = idandPasswords.getLoginInfo();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        JLabel titleLabel = new JLabel("CLOTHING CO.");
+        titleLabel.setFont(new Font("Verdana", Font.BOLD, 35));
+        mainPanel.add(titleLabel, gbc);
+
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        mainPanel.add(new JLabel("Username:"), gbc);
+
+        gbc.gridx = 1;
+        mainPanel.add(userIDField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        mainPanel.add(new JLabel("Password:"), gbc);
+
+        gbc.gridx = 1;
+        mainPanel.add(userPasswordField, gbc);
+
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+
+        loginButton.addActionListener(this);
+        signUpButton.addActionListener(this);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(loginButton);
+        buttonPanel.add(signUpButton);
+        mainPanel.add(buttonPanel, gbc);
+
+        gbc.gridy = 4;
+        mainPanel.add(messageLabel, gbc);
+
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == loginButton) {
+            String userID = userIDField.getText();
+            String password = String.valueOf(userPasswordField.getPassword());
+
+            if (logininfo.containsKey(userID)) {
+                if (logininfo.get(userID).equals(password)) {
+                    messageLabel.setForeground(Color.green);
+                    messageLabel.setText("Login Successful!");
+                    new AccountInfo(idandPasswords, userID); // Pass userID to AccountInfo
+                    frame.dispose();
+                } else {
+                    messageLabel.setForeground(Color.red);
+                    messageLabel.setText("Incorrect password!");
+                }
+            } else {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Username not found!");
+            }
+        }
+
+        if (e.getSource() == signUpButton) {
+            new Signup(idandPasswords);
+        }
+    }
+}
+
+import java.io.*;
+import java.util.HashMap;
+
+public class IDandPasswords {
+    private HashMap<String, String> logininfo = new HashMap<>(); // Stores username and password
+    private HashMap<String, String[]> userInfoMap = new HashMap<>(); // Stores all user details
+    private String dataFile = "userdata.txt"; // File to store all user data
+
+    public IDandPasswords() {
+        loadData(); // Load data from file at initialization
+    }
+
+    public HashMap<String, String> getLoginInfo() {
+        return logininfo;
+    }
+
+   public void saveUserInfo(String userID, String name, String address, String age, String phone, String email, String password) {
+    // Update the user information in the map
+    String[] userInfo = {name, address, age, phone, email, password};
+    userInfoMap.put(userID, userInfo);
+    logininfo.put(userID, password); // Update the login information
+    saveData(); // Persist the changes to the file
+}
+
+    public String[] getUserInfo(String userID) {
+        return userInfoMap.get(userID); // Retrieve user details from the map
+    }
+
+    private void saveData() {
+        try (FileWriter writer = new FileWriter(dataFile)) {
+            for (String userID : userInfoMap.keySet()) {
+                String[] userInfo = userInfoMap.get(userID);
+                writer.write(String.format("%s,%s,%s,%s,%s,%s,%s\n",
+                    userID, userInfo[0], userInfo[1], userInfo[2],
+                    userInfo[3], userInfo[4], userInfo[5])); // Save all fields
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadData() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 7) { // Ensure there are 7 fields
+                    String userID = parts[0];
+                    String[] userInfo = {parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]};
+                    userInfoMap.put(userID, userInfo); // Add to map
+                    logininfo.put(userID, parts[6]); // Add username and password for login
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+public class AccountInfo {
+    private JFrame frame = new JFrame("Account Information");
+
+    private JLabel nameLabel = new JLabel();
+    private JLabel addressLabel = new JLabel();
+    private JLabel ageLabel = new JLabel();
+    private JLabel phoneLabel = new JLabel();
+    private JLabel emailLabel = new JLabel();
+    private JLabel userIDLabel = new JLabel();
+    private JLabel passwordLabel = new JLabel();
+
+    private JButton updateButton = new JButton("Update Information");
+
+    public AccountInfo(IDandPasswords idandPasswords, String userID) {
+        String[] userInfo = idandPasswords.getUserInfo(userID);
+
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(600, 400);
+        frame.setLayout(new GridLayout(8, 2));
+
+        frame.add(new JLabel("Name:"));
+        nameLabel.setText(userInfo != null ? userInfo[0] : "N/A");
+        frame.add(nameLabel);
+
+        frame.add(new JLabel("Address:"));
+        addressLabel.setText(userInfo != null ? userInfo[1] : "N/A");
+        frame.add(addressLabel);
+
+        frame.add(new JLabel("Age:"));
+        ageLabel.setText(userInfo != null ? userInfo[2] : "N/A");
+        frame.add(ageLabel);
+
+        frame.add(new JLabel("Phone:"));
+        phoneLabel.setText(userInfo != null ? userInfo[3] : "N/A");
+        frame.add(phoneLabel);
+
+        frame.add(new JLabel("Email:"));
+        emailLabel.setText(userInfo != null ? userInfo[4] : "N/A");
+        frame.add(emailLabel);
+
+        frame.add(new JLabel("Username:"));
+        frame.add(new JLabel(userID));
+
+        frame.add(new JLabel("Password:"));
+        passwordLabel.setText(userInfo != null ? userInfo[5].replaceAll(".", "*") : "N/A");
+        frame.add(passwordLabel);
+
+        // Add the Update button
+        frame.add(new JLabel()); // Placeholder
+        frame.add(updateButton);
+
+        // Add action listener for the Update button
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new UpdateInfo(idandPasswords, userID); // Open UpdateInfo form
+                frame.dispose(); // Close the AccountInfo window
+            }
+        });
+
+        frame.setVisible(true);
+    }
+}
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+public class Signup implements ActionListener {
+    JFrame frame = new JFrame("Sign Up");
+    JTextField nameField = new JTextField(20);
+    JTextField addressField = new JTextField(20);
+    JTextField ageField = new JTextField(20);
+    JTextField phoneField = new JTextField(20);
+    JTextField emailField = new JTextField(20);
+    JTextField userIDField = new JTextField(20);
+    JPasswordField passwordField = new JPasswordField(20);
+    JCheckBox terms = new JCheckBox("I agree to the Terms and Conditions");
+    JButton submitButton = new JButton("Submit");
+    JLabel messageLabel = new JLabel();
+
+    IDandPasswords idandPasswords;
+
+    public Signup(IDandPasswords idandPasswords) {
+        this.idandPasswords = idandPasswords;
+
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        addFormField(mainPanel, gbc, "Name:", nameField, 0);
+        addFormField(mainPanel, gbc, "Address:", addressField, 1);
+        addFormField(mainPanel, gbc, "Age:", ageField, 2);
+        addFormField(mainPanel, gbc, "Phone:", phoneField, 3);
+        addFormField(mainPanel, gbc, "Email:", emailField, 4);
+        addFormField(mainPanel, gbc, "Username:", userIDField, 5);
+        addFormField(mainPanel, gbc, "Password:", passwordField, 6);
+
+        gbc.gridy = 7;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        mainPanel.add(terms, gbc);
+
+        gbc.gridy = 8;
+        submitButton.addActionListener(this);
+        mainPanel.add(submitButton, gbc);
+
+        gbc.gridy = 9;
+        mainPanel.add(messageLabel, gbc);
+
+        frame.add(mainPanel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JComponent field, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(new JLabel(label), gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(field, gbc);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == submitButton) {
+            if (!terms.isSelected()) {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Please agree to the Terms and Conditions");
+                return;
+            }
+
+            String userID = userIDField.getText();
+            String password = new String(passwordField.getPassword());
+
+            idandPasswords.saveUserInfo(userID,
+                nameField.getText(), addressField.getText(),
+                ageField.getText(), phoneField.getText(),
+                emailField.getText(), password);
+
+            messageLabel.setForeground(Color.green);
+            messageLabel.setText("Registration Successful!");
+            new javax.swing.Timer(2000, evt -> frame.dispose()).start();
+        }
+    }
+}
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+public class UpdateInfo implements ActionListener {
+    JFrame frame = new JFrame("Update Information");
+    JTextField nameField = new JTextField(20);
+    JTextField addressField = new JTextField(20);
+    JTextField ageField = new JTextField(20);
+    JTextField phoneField = new JTextField(20);
+    JTextField emailField = new JTextField(20);
+    JPasswordField passwordField = new JPasswordField(20);
+    JButton updateButton = new JButton("Update");
+
+    IDandPasswords idandPasswords;
+    String userID;
+
+    public UpdateInfo(IDandPasswords idandPasswords, String userID) {
+        this.idandPasswords = idandPasswords;
+        this.userID = userID;
+
+        String[] userInfo = idandPasswords.getUserInfo(userID);
+
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(400, 400);
+        frame.setLayout(new GridLayout(7, 2));
+
+        frame.add(new JLabel("Name:"));
+        nameField.setText(userInfo != null ? userInfo[0] : "");
+        frame.add(nameField);
+
+        frame.add(new JLabel("Address:"));
+        addressField.setText(userInfo != null ? userInfo[1] : "");
+        frame.add(addressField);
+
+        frame.add(new JLabel("Age:"));
+        ageField.setText(userInfo != null ? userInfo[2] : "");
+        frame.add(ageField);
+
+        frame.add(new JLabel("Phone:"));
+        phoneField.setText(userInfo != null ? userInfo[3] : "");
+        frame.add(phoneField);
+
+        frame.add(new JLabel("Email:"));
+        emailField.setText(userInfo != null ? userInfo[4] : "");
+        frame.add(emailField);
+
+        frame.add(new JLabel("Password:"));
+        passwordField.setText(userInfo != null ? userInfo[5] : "");
+        frame.add(passwordField);
+
+        frame.add(new JLabel()); // Placeholder
+        updateButton.addActionListener(this);
+        frame.add(updateButton);
+
+        frame.setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == updateButton) {
+            // Collect updated information
+            String name = nameField.getText();
+            String address = addressField.getText();
+            String age = ageField.getText();
+            String phone = phoneField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+
+            // Save the updated information
+            idandPasswords.saveUserInfo(userID, name, address, age, phone, email, password);
+
+            JOptionPane.showMessageDialog(frame, "Information updated successfully!");
+            frame.dispose(); // Close the update form
+
+            // Open the updated AccountInfo window
+            new AccountInfo(idandPasswords, userID);
+        }
+    }
+}
