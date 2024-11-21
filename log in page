@@ -1,0 +1,95 @@
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import javax.swing.*;
+
+public class LoginPage implements ActionListener {
+    JFrame frame = new JFrame();
+    JButton loginButton = new JButton("Log In");
+    JButton signUpButton = new JButton("Sign Up");
+    JTextField userIDField = new JTextField(15);
+    JPasswordField userPasswordField = new JPasswordField(15);
+    JLabel messageLabel = new JLabel(); // To display error or success messages
+
+    HashMap<String, String> logininfo = new HashMap<>();
+    IDandPasswords idandPasswords;
+
+    public LoginPage(IDandPasswords idandPasswords) {
+        this.idandPasswords = idandPasswords;
+        logininfo = idandPasswords.getLoginInfo();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        JLabel titleLabel = new JLabel("CLOTHING CO.");
+        titleLabel.setFont(new Font("Verdana", Font.BOLD, 35));
+        mainPanel.add(titleLabel, gbc);
+
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        mainPanel.add(new JLabel("Username:"), gbc);
+
+        gbc.gridx = 1;
+        mainPanel.add(userIDField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        mainPanel.add(new JLabel("Password:"), gbc);
+
+        gbc.gridx = 1;
+        mainPanel.add(userPasswordField, gbc);
+
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+
+        loginButton.addActionListener(this);
+        signUpButton.addActionListener(this);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(loginButton);
+        buttonPanel.add(signUpButton);
+        mainPanel.add(buttonPanel, gbc);
+
+        gbc.gridy = 4;
+        mainPanel.add(messageLabel, gbc);
+
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == loginButton) {
+            String userID = userIDField.getText();
+            String password = String.valueOf(userPasswordField.getPassword());
+
+            if (logininfo.containsKey(userID)) {
+                if (logininfo.get(userID).equals(password)) {
+                    messageLabel.setForeground(Color.green);
+                    messageLabel.setText("Login Successful!");
+                    new AccountInfo(idandPasswords, userID); // Pass userID to AccountInfo
+                    frame.dispose();
+                } else {
+                    messageLabel.setForeground(Color.red);
+                    messageLabel.setText("Incorrect password!");
+                }
+            } else {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Username not found!");
+            }
+        }
+
+        if (e.getSource() == signUpButton) {
+            new Signup(idandPasswords);
+        }
+    }
+}
