@@ -1,0 +1,165 @@
+package com.mycompany.home;
+import com.mycompany.home.Homepage;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+public class LoginPage implements ActionListener {
+    private static String currentUserID;
+    JLabel titleLabel = new JLabel("CLOTHING CO.");
+    JLabel subtitleLabel = new JLabel("Log in or sign up to continue shopping.");
+    JFrame frame = new JFrame();
+    JButton loginButton = new JButton("Log In");
+    JButton signUpButton = new JButton("Sign Up");
+    JTextField userIDField = new JTextField(15);
+    JPasswordField userPasswordField = new JPasswordField(15);
+    JLabel userIDLabel = new JLabel("Username:");
+    JLabel userPasswordLabel = new JLabel("Password:");
+    JLabel messageLabel = new JLabel();
+
+    HashMap<String, String> logininfo = new HashMap<>();
+
+    LoginPage(HashMap<String, String> loginInfoOriginal) {
+        
+        loginInfoOriginal.put("admin123", "password_SMFREEWIFI");
+        logininfo = loginInfoOriginal;
+
+        
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+     
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+     
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.CENTER;
+
+       
+        titleLabel.setFont(new Font("Verdana", Font.BOLD, 35));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        mainPanel.add(titleLabel, gbc);
+
+ 
+        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 5, 20, 5);
+        mainPanel.add(subtitleLabel, gbc);
+
+ 
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        mainPanel.add(userIDLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        userIDField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        mainPanel.add(userIDField, gbc);
+
+      
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        mainPanel.add(userPasswordLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        userPasswordField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        mainPanel.add(userPasswordField, gbc);
+
+      
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        loginButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        loginButton.setBackground(Color.WHITE);
+        loginButton.setForeground(Color.BLACK);
+        loginButton.addActionListener(this);
+        loginButton.setFocusable(false);
+
+        signUpButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        signUpButton.setBackground(Color.WHITE);
+        signUpButton.setForeground(Color.BLACK);
+        signUpButton.addActionListener(this);
+        signUpButton.setFocusable(false);
+
+        buttonPanel.add(loginButton);
+        buttonPanel.add(signUpButton);
+
+        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainPanel.add(buttonPanel, gbc);
+
+      
+        messageLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+        gbc.gridy = 5;
+        mainPanel.add(messageLabel, gbc);
+
+     
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+    
+    public static String getCurrentUserID(){
+            return currentUserID;
+        }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == signUpButton) {
+            Signup signup = new Signup(new IDandPasswords());
+        }
+
+        if (e.getSource() == loginButton) {
+            String userID = userIDField.getText();
+            String password = String.valueOf(userPasswordField.getPassword());
+
+            if (logininfo.containsKey(userID)) {
+                if (logininfo.get(userID).equals(password)) {
+                    messageLabel.setForeground(Color.green);
+                    messageLabel.setText("Login Successful!");
+                    currentUserID = userID;
+                                     
+                    if (userID.equals("admin")) {    
+                        } // code: pupunta sa page ng admin
+                    else {  
+                        // code: pupunta sa customer page 
+                       Homepage home = new Homepage(userID);
+                        home.setVisible(true);
+
+                        }
+                    
+                } else {
+                    messageLabel.setForeground(Color.red);
+                    messageLabel.setText("Incorrect password!");
+                }
+            } else {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Incorrect username!");
+            }
+        }
+       
+    }
+}
+
+ 
