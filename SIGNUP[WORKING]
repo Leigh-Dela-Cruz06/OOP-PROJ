@@ -1,0 +1,187 @@
+package com.mycompany.home;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+public class Signup implements ActionListener {
+    JFrame frame = new JFrame();
+    JLabel signup = new JLabel("Sign Up");
+    
+    JTextField nameField = new JTextField(20);
+    JTextField addressField = new JTextField(20);
+    JTextField birthdateField = new JTextField(20);
+    JTextField ageField = new JTextField(20);
+    JTextField phoneField = new JTextField(20);
+    JTextField emailField = new JTextField(20);
+    JTextField userIDField = new JTextField(20);
+    JPasswordField passwordField = new JPasswordField(20);
+    
+    JLabel nameLabel = new JLabel("Name:");
+    JLabel addressLabel = new JLabel("Address:");
+    JLabel birthdateLabel = new JLabel("Birthdate:");
+    JLabel ageLabel = new JLabel("Age:");
+    JLabel phoneLabel = new JLabel("Phone:");
+    JLabel emailLabel = new JLabel("Email:");
+    JLabel userIDLabel = new JLabel("Username:");
+    JLabel passwordLabel = new JLabel("Password:");
+    
+    JCheckBox terms = new JCheckBox("I agree to the Terms and Condition");
+    JButton submitButton = new JButton("Submit");
+    JLabel messageLabel = new JLabel();
+    
+    IDandPasswords idandPasswords;
+    
+    Signup(IDandPasswords idandpasswords) {
+        this.idandPasswords = idandpasswords;
+        
+        
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        
+        signup.setFont(new Font("Verdana", Font.BOLD, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainPanel.add(signup, gbc);
+        
+        
+        gbc.gridwidth = 1;
+        
+        
+        addFormField(mainPanel, gbc, nameLabel, nameField, 1);
+        addFormField(mainPanel, gbc, addressLabel, addressField, 2);
+        addFormField(mainPanel, gbc, birthdateLabel, birthdateField, 3);
+        addFormField(mainPanel, gbc, ageLabel, ageField, 4);
+        addFormField(mainPanel, gbc, phoneLabel, phoneField, 5);
+        addFormField(mainPanel, gbc, emailLabel, emailField, 6);
+        addFormField(mainPanel, gbc, userIDLabel, userIDField, 7);
+        addFormField(mainPanel, gbc, passwordLabel, passwordField, 8);
+        
+        
+        gbc.gridy = 9;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainPanel.add(terms, gbc);
+        
+        
+        gbc.gridy = 10;
+        gbc.gridwidth = 2;
+        submitButton.addActionListener(this);
+        mainPanel.add(submitButton, gbc);
+        
+        
+        gbc.gridy = 11;
+        messageLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+        mainPanel.add(messageLabel, gbc);
+        
+        frame.add(mainPanel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+    
+    private void addFormField(JPanel panel, GridBagConstraints gbc, JLabel label, JComponent field, int row) {
+        gbc.gridy = row;
+        
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(label, gbc);
+        
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(field, gbc);
+    }
+    
+    private boolean isUsernameExists(String username) { 
+        try(BufferedReader reader = new BufferedReader(new FileReader("userinformation.txt"))) { 
+                String line; 
+                while ((line = reader.readLine()) != null) { 
+                    String[] parts = line.split(",");
+                    if (parts.length > 0 && parts[0].equals(username)){
+                    return true;
+                }
+        }
+    }   catch (IOException e) { 
+        return false;
+    }
+        return false;
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == submitButton) {
+            if (nameField.getText().isEmpty() || addressField.getText().isEmpty() || 
+                birthdateField.getText().isEmpty() || ageField.getText().isEmpty() || phoneField.getText().isEmpty() || 
+                emailField.getText().isEmpty() || userIDField.getText().isEmpty() || 
+                passwordField.getPassword().length == 0) {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("All fields are required!");
+                return;
+            }
+            if (!terms.isSelected()) {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Please agree to the Terms and Conditions");
+                return;
+            }
+            String userID = userIDField.getText();
+                if (isUsernameExists(userID)){ 
+                    messageLabel.setForeground(Color.red);
+                    messageLabel.setText("Username already exists!");
+                    return;
+                }
+                
+            String password = String.valueOf(passwordField.getPassword());
+                idandPasswords.saveUserInfo(
+                userID, nameField.getText(), addressField.getText(), birthdateField.getText(), ageField.getText(), phoneField.getText(), emailField.getText(), password);
+            
+            try (FileWriter file = new FileWriter("userinformation.txt", true)) {
+                file.write(String.format("%s,%s,%s,%s,%s,%s,%s\n",
+                    userID, nameField.getText(), addressField.getText(),
+                    ageField.getText(), phoneField.getText(), emailField.getText(), password));
+                
+                idandPasswords.saveUserInfo(
+                    userID, nameField.getText(),addressField.getText(),birthdateField.getText(),ageField.getText(),phoneField.getText(),emailField.getText(),password);
+                
+                messageLabel.setForeground(Color.green);
+                messageLabel.setText("Registration Successful!");
+               
+                new javax.swing.Timer(2000, evt -> frame.dispose()).start();
+                
+            } catch (IOException ex) {
+                messageLabel.setForeground(Color.red);
+                messageLabel.setText("Error!");
+            }
+        }
+    }
+}
+
+
+
