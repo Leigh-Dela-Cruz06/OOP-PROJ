@@ -1,0 +1,97 @@
+package com.mycompany.home;
+
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+
+public class UpdateInfo implements ActionListener {
+    private JFrame frame = new JFrame("Update Information");
+    private JTextField nameField = new JTextField(20);
+    private JTextField addressField = new JTextField(20);
+    private JTextField birthdateField = new JTextField(20);
+    private JTextField ageField = new JTextField(20);
+    private JTextField phoneField = new JTextField(20);
+    private JTextField emailField = new JTextField(20);
+    private JPasswordField passwordField = new JPasswordField(20);
+    private JButton updateButton = new JButton("Update");
+
+    private IDandPasswords idandPasswords;
+    private String userID;
+
+    public UpdateInfo(IDandPasswords idandPasswords, String userID) {
+        this.idandPasswords = idandPasswords;
+        this.userID = userID;
+
+        String[] userInfo = idandPasswords.getUserInfo(userID);
+
+        if (userInfo == null) {
+            JOptionPane.showMessageDialog(frame, "User information could not be loaded.", "Error", JOptionPane.ERROR_MESSAGE);
+            frame.dispose();
+            return;
+        }
+
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(500, 400);
+        frame.setLayout(new GridLayout(9, 2, 10, 10));
+
+        frame.add(new JLabel("Name:"));
+        nameField.setText(userInfo[0]);
+        frame.add(nameField);
+
+        frame.add(new JLabel("Address:"));
+        addressField.setText(userInfo[1]);
+        frame.add(addressField);
+
+        frame.add(new JLabel("Birthdate:"));
+        birthdateField.setText(userInfo[2]);
+        frame.add(birthdateField);
+
+        frame.add(new JLabel("Age:"));
+        ageField.setText(userInfo[3]);
+        frame.add(ageField);
+
+        frame.add(new JLabel("Phone:"));
+        phoneField.setText(userInfo[4]);
+        frame.add(phoneField);
+
+        frame.add(new JLabel("Email:"));
+        emailField.setText(userInfo[5]);
+        frame.add(emailField);
+
+        frame.add(new JLabel("Password:"));
+        passwordField.setText(userInfo[6]); // Set existing password
+        frame.add(passwordField);
+
+        frame.add(new JLabel()); // Placeholder for alignment
+        updateButton.addActionListener(this);
+        frame.add(updateButton);
+
+        frame.setLocationRelativeTo(null); // Center the frame
+        frame.setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == updateButton) {
+            // Gather updated information
+            String name = nameField.getText().trim();
+            String address = addressField.getText().trim();
+            String birthdate = birthdateField.getText().trim();
+            String age = ageField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = new String(passwordField.getPassword()).trim();
+
+            // Save updated user info
+            idandPasswords.saveUserInfo(userID, name, address, birthdate, age, phone, email, password);
+
+            // Notify user and close the frame
+            JOptionPane.showMessageDialog(frame, "Information updated successfully!");
+            frame.dispose();
+
+            // Reopen AccountInfo to reflect changes
+            new AccountInfo(idandPasswords, userID);
+        }
+    }
+}
