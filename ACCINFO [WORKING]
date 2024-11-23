@@ -1,0 +1,79 @@
+package com.mycompany.home;
+
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+public class AccountInfo {
+    private JFrame frame = new JFrame("Account Information");
+
+    private JLabel nameLabel = new JLabel();
+    private JLabel addressLabel = new JLabel();
+    private JLabel birthdateLabel = new JLabel();
+    private JLabel ageLabel = new JLabel();
+    private JLabel phoneLabel = new JLabel();
+    private JLabel emailLabel = new JLabel();
+    private JLabel passwordLabel = new JLabel();
+
+    private JButton updateButton = new JButton("Update Information");
+
+    public AccountInfo(IDandPasswords idandPasswords, String userID) {
+        String[] userInfo = idandPasswords.getUserInfo(userID);
+
+        if (userInfo == null) {
+            JOptionPane.showMessageDialog(frame, "User information could not be loaded.", "Error", JOptionPane.ERROR_MESSAGE);
+            frame.dispose();
+            return;
+        }
+
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(500, 400);
+        frame.setLayout(new GridLayout(9, 2, 10, 10));
+
+        frame.add(new JLabel("Name:"));
+        nameLabel.setText(userInfo[0]);
+        frame.add(nameLabel);
+
+        frame.add(new JLabel("Address:"));
+        addressLabel.setText(userInfo[1]);
+        frame.add(addressLabel);
+
+        frame.add(new JLabel("Birthdate:"));
+        birthdateLabel.setText(userInfo[2]);
+        frame.add(birthdateLabel);
+
+        frame.add(new JLabel("Age:"));
+        ageLabel.setText(userInfo[3]);
+        frame.add(ageLabel);
+
+        frame.add(new JLabel("Phone:"));
+        phoneLabel.setText(userInfo[4]);
+        frame.add(phoneLabel);
+
+        frame.add(new JLabel("Email:"));
+        emailLabel.setText(userInfo[5]);
+        frame.add(emailLabel);
+
+        frame.add(new JLabel("Password:"));
+        passwordLabel.setText(userInfo[6].replaceAll(".", "*"));
+        frame.add(passwordLabel);
+
+        frame.add(new JLabel()); // Placeholder
+        frame.add(updateButton);
+
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new UpdateInfo(idandPasswords, userID);
+                frame.dispose();
+            }
+        });
+
+        frame.setLocationRelativeTo(null); // Center the frame
+        frame.setVisible(true);
+    }
+}
