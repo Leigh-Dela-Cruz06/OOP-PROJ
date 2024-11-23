@@ -1,0 +1,63 @@
+package com.mycompany.home;
+
+import java.util.HashMap;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class IDandPasswords {
+    private HashMap<String, String> logininfo = new HashMap<>(); // Stores username and password
+    private HashMap<String, String[]> userInfoMap = new HashMap<>(); // Stores all user details
+    private String dataFile = "userdata.txt"; // File to store all user data
+
+    public IDandPasswords() {
+        loadData(); // Load data from file at initialization
+    }
+
+    public HashMap<String, String> getLoginInfo() {
+        return logininfo;
+    }
+
+   public void saveUserInfo(String userID, String name, String address, String birthdate, String age, String phone, String email, String password) {
+    // Update the user information in the map
+    String[] userInfo = {name, address, birthdate, age, phone, email, password};
+    userInfoMap.put(userID, userInfo);
+    logininfo.put(userID, password); // Update the login information
+    saveData(); // Persist the changes to the file
+}
+
+    public String[] getUserInfo(String userID) {
+        return userInfoMap.get(userID); // Retrieve user details from the map
+    }
+
+    private void saveData() {
+        try (FileWriter writer = new FileWriter(dataFile)) {
+            for (String userID : userInfoMap.keySet()) {
+                String[] userInfo = userInfoMap.get(userID);
+                writer.write(String.format("%s,%s,%s,%s,%s,%s,%s\n",
+                    userID, userInfo[0], userInfo[1], userInfo[2],
+                    userInfo[3], userInfo[4], userInfo[5])); // Save all fields
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadData() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 7) { // Ensure there are 7 fields
+                    String userID = parts[0];
+                    String[] userInfo = {parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]};
+                    userInfoMap.put(userID, userInfo); // Add to map
+                    logininfo.put(userID, parts[6]); // Add username and password for login
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
